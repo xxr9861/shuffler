@@ -1,0 +1,93 @@
+#! /bin/bash
+
+input_file=$@
+
+file1="$HOME/.tempfile1"
+file2="$HOME/.tempfile2"
+
+precheck(){
+
+    if [ -f $file1 ]
+    then
+	:
+    else
+	touch $file1
+    fi
+
+    if [ -f $file2 ]
+    then
+	:
+    else
+	touch $file2
+    fi
+
+cat $input_file > $file1
+number_of_lines_in_file=$(cat $file1 | wc -l)
+
+}
+
+
+
+
+
+
+main_work(){
+
+random_number_between_1_and_x=$(echo $(( $RANDOM % $number_of_lines_in_file )))
+random_number_between_1_and_20=$(echo $(( $RANDOM % 20 )))
+range_beginning=$(($random_number_between_1_and_x + 1)) #sed beginning of range cannot be zero
+range_end=$(($range_beginning + $random_number_between_1_and_20))
+
+
+if [ $range_end -gt $number_of_lines_in_file ]
+then
+    :
+    else
+echo $range_beginning $range_end	
+echo $file1 $file2
+# sed '$range_beginning,$range_end !d' $file1 > $file2
+# variable expansion not taking place inside single quotes
+
+ sed "$range_beginning,$range_end !d" $file1 > $file2
+
+ sed "$range_beginning,$range_end d" $file1 >> $file2;
+
+	placeholder=$file1
+	file1=$file2
+	file2=$placeholder
+
+fi
+
+}
+
+
+count=0
+operate_on_file1(){
+
+   while [ $count -le 200 ]
+       do
+    count=$(($count +1))
+
+    
+    # file1=$file2
+    # file2=$file1
+
+    main_work
+
+   done
+   
+   
+	echo "$file1 is the output file, take it kind sir"
+#either file1 or file2 both have the same stuff
+name_fragment=$(date | sed 's/ /_/g')
+name_fragment1="shuffled"
+cp $file1 $input_file$name_fragment$name_fragment1
+echo "your file have been saved as $input_file$name_fragment$name_fragment1 "
+rm $file1 $file2
+echo "$file1 and $file2 removed"
+
+    }
+
+
+precheck
+operate_on_file1
